@@ -51,7 +51,7 @@ datadf["scores"] = IsoClf.predict(datadf)
 datadfOutliers = datadf[datadf["scores"] == -1]
 datadfNormal = datadf[datadf["scores"] == 1]
 
-fig, axs = plt.subplots(3, 2)
+fig, axs = plt.subplots(4, 2)
 
 axs[0,0].scatter(datadfNormal["time"], datadfNormal["data"], alpha = 0.1, color = "red")
 axs[0,0].scatter(datadfOutliers["time"], datadfOutliers["data"], alpha = 0.2 )
@@ -85,8 +85,8 @@ from sklearn.neighbors import LocalOutlierFactor  #THIS IS NOVELTY-DETECTION, SL
 datadf = pd.DataFrame(data = datadict)
 
 LOFclf = LocalOutlierFactor(novelty = True, contamination = 0.05) #params are mostly auto
-LOFclf.fit(datadf)
-datadfnovel["scores"] = LOFclf.predict(datadfnovel)
+LOFclf.fit(datadf.values)
+datadfnovel["scores"] = LOFclf.predict(datadfnovel.values)
 datadfOutliers = datadfnovel[datadfnovel["scores"] == -1]
 datadfNormal = datadfnovel[datadfnovel["scores"] == 1]
 
@@ -142,8 +142,43 @@ axs[2, 1].scatter(datadf["time"], datadf["data"], c = datadf["Color"])
 axs[2, 1].set_title('DBSCAN eps = 4')
 
 
+#TENSOR FLOW - many options, implement convolution first 
+
+import tensorflow as tf
+
+convolved = np.convolve(datadf['data'], [1,3,9,0,1], mode = 'same') #arbitrary kernel, 9 for visible effect
+print(convolved)
+print('convolution reached')
+datadf['convolved'] = convolved
+
+axs[3,0].scatter(datadf["time"], datadf['convolved'], alpha = 0.2)
+axs[3,0].set_title('Convolution numpy test')
+
 plt.show()
-#TENSOR FLOW - many options
+
+
+#template from internet, for complex 2D data, most likely not applicable but will leave here in case of complex assembly line data.
+def build_model():
+    model = tf.keras.Sequential(
+        [
+            # first convolution layer
+            tf.keras.layers.Conv2D(32, (3, 3), activation="relu",
+                                input_shape=(2, 1)),   #32 activations, input_shape TBD, probably only 2 by 1. convoluting it to 32 feature maps
+            tf.keras.layers.MaxPooling2D((2, 2), strides=2),   #reduces dimensionality of data, strides is how far the window moves for each step (the window of 2x2)
+ 
+            # second convolution layer
+            tf.keras.layers.Conv2D(64, (3, 3), activation="relu"),  #convolution repeat, now to 64 feature maps to truly extract each feature
+            tf.keras.layers.MaxPooling2D((2, 2), strides=2),
+ 
+            # fully connected classification
+            # single vector
+            tf.keras.layers.Flatten(), #classic flatten the array into 1d for usability
+           
+            # hidden layer and output layer
+            tf.keras.layers.Dense(1024, activation="relu"),  #again, probably completely overkill for what we're doing
+            tf.keras.layers.Dense(10, activation="softmax")
+        ])
+    return model
 
 
 
