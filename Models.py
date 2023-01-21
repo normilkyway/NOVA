@@ -5,7 +5,8 @@ import json
 
 #load data (code re-use)
 data = []
-cnt = str(input('Access id#: '))
+#cnt = str(input('Access id#: '))
+cnt = '5' #hard coding 5
 filename = 'data_' + cnt + '.txt'
 with open(filename, 'r') as f:
     data = json.loads(f.read())
@@ -106,7 +107,43 @@ datadf["scores"] = KDclf.score_samples(datadf)
 
 axs[1, 1].scatter(datadf["time"], datadf["scores"], alpha = 0.2) #here you can filter based on the probability
 axs[1, 1].set_title("KernelDensity")
-plt.show()
 
-#TENSOR FLOW - RESEARCH NEEDED
+
+
+from sklearn.cluster import DBSCAN
+
+datadf = pd.DataFrame(data = datadict)
+
+DBSCANclf = DBSCAN(eps = 10, min_samples = 2)  #eps - maximum distance between samples to be considered same neighborhood(tweak), min_samples is the minimum samples to be considered neighborhood
+datadf["cluster"] = DBSCANclf.fit(datadf).labels_ 
+
+categories = np.unique(datadf['cluster'])
+colors = np.linspace(0, 1, len(categories))
+colordict = dict(zip(categories, colors))
+
+datadf["Color"] = datadf['cluster'].apply(lambda x: colordict[x])
+axs[2, 0].scatter(datadf["time"], datadf["data"], c = datadf["Color"])
+axs[2, 0].set_title('DBSCAN eps = 10')
+
+###############################################################################################################
+#DBSCAN with different eps
+
+datadf = pd.DataFrame(data = datadict)
+
+DBSCANclf2 = DBSCAN(eps = 4, min_samples = 2)
+datadf["cluster"] = DBSCANclf2.fit(datadf).labels_
+
+categories = np.unique(datadf['cluster'])
+colors = np.linspace(0, 1, len(categories))
+colordict = dict(zip(categories, colors))
+
+datadf["Color"] = datadf['cluster'].apply(lambda x: colordict[x])
+axs[2, 1].scatter(datadf["time"], datadf["data"], c = datadf["Color"])
+axs[2, 1].set_title('DBSCAN eps = 4')
+
+
+plt.show()
+#TENSOR FLOW - many options
+
+
 
