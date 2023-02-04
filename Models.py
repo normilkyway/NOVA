@@ -158,7 +158,7 @@ plt.show()
 
 
 #template from internet, for complex 2D data, most likely not applicable but will leave here in case of complex assembly line data.
-def build_model():
+'''def build_model():
     model = tf.keras.Sequential(
         [
             # first convolution layer
@@ -178,7 +178,7 @@ def build_model():
             tf.keras.layers.Dense(1024, activation="relu"),  #again, probably completely overkill for what we're doing
             tf.keras.layers.Dense(10, activation="softmax")
         ])
-    return model
+    return model'''
 
 
 
